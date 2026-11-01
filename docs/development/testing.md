@@ -1,5 +1,10 @@
 # Testing and CI
 
+`test-vncproxy.js` checks the Live TV token, Origin, Host and control guards,
+and forwards upgrade head buffers and data through a local test VNC endpoint.
+The deployment asset check normalizes paths to forward slashes on Windows.
+Vendored noVNC browser modules are excluded from server-side type checking.
+
 Every pull request is checked on [GitHub Actions](https://github.com/rorygallagher2024/glasshouse/actions) before it is merged. Most of
 the checks exist because a mistake of that kind once reached a release, or
 could have without anyone noticing: the TV gives little feedback when

@@ -21,6 +21,7 @@ var ha = require('./ha');
 var fetchLib = require('./fetch');
 var devtools = require('./devtools');
 var names = require('./names');
+var vncproxy = require('./vncproxy');
 
 var HA_CATEGORIES = ha.HA_CATEGORIES;
 var HA_ENTITIES = ha.HA_ENTITIES;
@@ -1226,6 +1227,21 @@ function handleHomeRoute(req, res, u, pathname) {
   send(res, 404, JSON.stringify({ ok: false, error: 'not found' }));
 }
 
+function handleUpgrade(req, socket, head) {
+  var u = parseUrl(req.url);
+  if (u.pathname !== '/api/remote-desktop/socket') return vncproxy.refuse(socket, 404);
+  if (!authed(u.query, req)) return vncproxy.refuse(socket, 401);
+  if (!config.allowControl || !config.remoteDesktop || !config.remoteDesktop.enabled) return vncproxy.refuse(socket, 403);
+  var origin = req.headers.origin;
+  var host = String(req.headers.host || '');
+  if (!hostAllowed(req) || (origin !== 'http://' + host && origin !== 'https://' + host)) return vncproxy.refuse(socket, 403);
+  if (req.method !== 'GET' || String(req.headers.upgrade).toLowerCase() !== 'websocket' ||
+      req.headers['sec-websocket-version'] !== '13' ||
+      !/^[A-Za-z0-9+/]{22}==$/.test(String(req.headers['sec-websocket-key'] || '')) ||
+      !/(^|,\s*)binary(\s*,|$)/.test(String(req.headers['sec-websocket-protocol'] || ''))) return vncproxy.refuse(socket, 400);
+  vncproxy.proxy(req, socket, head);
+}
+
 function handleRequest(req, res) {
   var u = parseUrl(req.url);
   var pathname = u.pathname;
@@ -1295,6 +1311,18 @@ function handleRequest(req, res) {
 
   if (pathname.indexOf('/api/') === 0 && !authed(u.query, req)) {
     return send(res, 401, JSON.stringify({ ok: false, error: 'bad or missing token' }));
+  }
+
+  if (pathname === '/api/remote-desktop') {
+    var remote = config.remoteDesktop || {};
+    if (!config.allowControl || !remote.enabled) return send(res, 403, JSON.stringify({ ok: false, error: msg('srv.live.disabled', 'Live TV is not enabled on this TV.') }));
+    if (req.method === 'GET') return send(res, 200, JSON.stringify({ ok: true, password: remote.password || '' }));
+    if (req.method === 'POST') return readJsonBody(req, res, function () {
+      luna('org.webosbrew.vncserver.service/start', {}, function (r) {
+        send(res, 200, JSON.stringify(r));
+      });
+    });
+    return send(res, 405, JSON.stringify({ ok: false, error: 'method not allowed' }));
   }
 
   if (pathname === '/api/caps') {
@@ -2112,6 +2140,7 @@ function init(opts) {
 module.exports = {
   init: init,
   handleRequest: handleRequest,
+  handleUpgrade: handleUpgrade,
   send: send,
   readJsonBody: readJsonBody,
   authed: authed,

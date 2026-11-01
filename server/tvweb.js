@@ -1000,6 +1000,7 @@ if (!CLI_MODE) backup.startDaily();
 if (WEB_ENABLED && !CLI_MODE) routes.loadUI();   // otherwise nothing will serve it
 
 var server = http.createServer(routes.handleRequest);
+server.on('upgrade', routes.handleUpgrade);
 
 var webEnabled = WEB_ENABLED;
 var mqttEnabled = !!(CONFIG.mqtt && CONFIG.mqtt.enabled && CONFIG.mqtt.host);
