@@ -7,6 +7,7 @@
  */
 const TABS = {
   control:     'tab-control',
+  liveview:    'liveviewpane',
   metrics:     'tab-metrics',
   apps:        'appspane',
   home:        'homepane',
@@ -25,7 +26,7 @@ const TABS = {
 // Each tab's page on the docs site, for Help.
 const DOCS = 'https://rorygallagher2024.github.io/glasshouse/';
 const TAB_DOCS = {
-  control: 'dashboard/control/', metrics: 'dashboard/metrics/', apps: 'dashboard/apps/', home: 'dashboard/home/',
+  control: 'dashboard/control/', liveview: 'dashboard/control/', metrics: 'dashboard/metrics/', apps: 'dashboard/apps/', home: 'dashboard/home/',
   oledcare: 'dashboard/oled-care/', game: 'dashboard/game/', picture: 'dashboard/picture/', audio: 'dashboard/audio/', servicemenu: 'dashboard/service-menu/',
   screensaver: 'dashboard/screen-savers/', privacy: 'dashboard/privacy/', advanced: 'dashboard/advanced/',
   mqtt: 'HOME-ASSISTANT/', server: 'dashboard/server/', tools: 'dashboard/tools/'
@@ -69,6 +70,7 @@ function showTab(name) {
   if (name === 'oledcare' && isOledSet === false) name = 'control';
   if (name === 'home' && homeAvailable === false) name = 'control';
   activeTab = name;
+  liveViewVisible(name === 'liveview');
   for (const [key, id] of Object.entries(TABS)) {
     const el = q(id);
     if (el) el.hidden = key !== name;

@@ -1,5 +1,31 @@
 # Control
 
+## Live TV
+
+The **Live TV** tab shows the TV's interface inside the web dashboard using
+noVNC 1.6.0. Click the picture to use the mouse and keyboard; right-click goes
+back. Home, Back, disconnect and full-screen buttons sit above the picture.
+Leaving the tab disconnects the viewer. Hardware video layers, including
+streaming playback and HDMI pictures, may be blank.
+
+![Live TV inside Glasshouse on an LG C4](../screenshots/live-tv.png)
+
+This requires the Homebrew Channel's VNCServer app with its native WebSocket
+support. In Glasshouse's `config.json`, set `remoteDesktop.enabled` to `true`
+and `remoteDesktop.password` to the password configured in VNCServer. Restart
+Glasshouse afterwards. These settings are file-only. The tab starts VNCServer
+when connecting; it does not install it or change its settings.
+
+The browser connects through Glasshouse's existing address and dashboard token.
+The proxy connects only to the TV's own VNC server on `127.0.0.1:5900`, checks
+the browser's Origin and Host, and refuses access when controls or the feature
+are disabled. The authenticated configuration API supplies the VNC password;
+it is not placed in page markup or URLs. No PC bridge is required. Keep the
+dashboard and VNC ports on the trusted home network.
+
+This is a local customization; installing an upstream Glasshouse release can
+replace it. The noVNC sources and license notices ship in `assets/novnc/`.
+
 The **Control** tab, `/?tab=control`, turns the TV into a locally controlled device over the home network, operating directly with webOS without relying on LG's cloud services or mobile applications.
 
 ## Navigation and playback

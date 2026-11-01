@@ -15,6 +15,7 @@
   // The dashboard's scripts, which the server joins into one before serving,
   // so no one of them stands alone.
   "exclude": [
-    "server/assets/ui"
+    "server/assets/ui",
+    "server/assets/novnc"
   ]
 }

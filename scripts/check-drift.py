@@ -95,7 +95,7 @@ def check_deploy():
         if d.exists():
             for f in d.rglob('*'):
                 if f.is_file():
-                    on_disk.add(str(f.relative_to(root / 'server')))
+                    on_disk.add(f.relative_to(root / 'server').as_posix())
     for missing in sorted(on_disk - listed):
         problems.append('server/deploy.sh: %s is not in FILES, so it is never installed' % missing)
     for gone in sorted(f for f in listed - on_disk if f.startswith(('assets/', 'lib/', 'screensavers/'))):

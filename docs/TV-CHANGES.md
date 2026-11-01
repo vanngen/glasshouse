@@ -180,3 +180,13 @@ limited to. An icon is only read from inside its app's own folder,
 whatever the app's `appinfo.json` names. Anyone on the network can tell which
 apps are installed by asking for their icons. Off by default. A port already in use is logged and left, and the
 dashboard and Home Assistant bridge carry on without it.
+# Live TV dashboard customization
+
+With `remoteDesktop.enabled: true`, Glasshouse can start the installed
+`org.webosbrew.vncserver.service` when a dashboard viewer connects. Browser
+connections are authenticated and forwarded to its native WebSocket endpoint
+on localhost port 5900. No new listener or boot hook is added. The optional
+`remoteDesktop.password` is stored in Glasshouse's existing private config file
+and returned only through its authenticated API while controls are enabled.
+Disabling the feature prevents new connections; restart Glasshouse to close
+existing sessions. This customization does not change VNCServer's own settings.
