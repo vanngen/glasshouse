@@ -22,6 +22,7 @@ var fetchLib = require('./fetch');
 var devtools = require('./devtools');
 var names = require('./names');
 var vncproxy = require('./vncproxy');
+var timers = require('./timers');
 
 var HA_CATEGORIES = ha.HA_CATEGORIES;
 var HA_ENTITIES = ha.HA_ENTITIES;
@@ -109,6 +110,8 @@ var historyModule = null;
 var sshKeysModule = null;
 /** @type {typeof import('./screentime')} */
 var screentimeModule = null;
+/** @type {typeof import('./scheduled')} */
+var scheduledModule = null;
 /** @type {typeof import('./backup')} */
 var backupModule = null;
 var fromHbcFn = null;
@@ -570,8 +573,9 @@ function inlineUI(html) {
     if (!missing) missing = rel;
     return '';
   }
-  html = html.replace(/<link rel="stylesheet" href="\/assets\/(ui\/[\w-]+\.css)">\n/g, function (m, rel) {
-    return '<style>\n' + part(rel) + '</style>\n';
+  html = html.replace(/(?:<link rel="stylesheet" href="\/assets\/ui\/[\w-]+\.css">\n)+/g, function (run) {
+    var styles = run.match(/ui\/[\w-]+\.css/g);
+    return '<style>\n' + styles.map(part).join('\n') + '</style>\n';
   });
   html = html.replace(/(?:<script src="\/assets\/ui\/[\w-]+\.js"><\/script>\n)+/g, function (run) {
     var scripts = run.match(/ui\/[\w-]+\.js/g);
@@ -1310,6 +1314,34 @@ function handleRequest(req, res) {
 
   if (pathname.indexOf('/api/') === 0 && !authed(u.query, req)) {
     return send(res, 401, JSON.stringify({ ok: false, error: 'bad or missing token' }));
+  }
+
+  if (pathname === '/api/scheduled' && scheduledModule) {
+    function scheduledReply() {
+      var result = /** @type {any} */ (scheduledModule.status());
+      result.ok = true;
+      result.writable = !!config.allowControl;
+      result.apps = (telemetryModule.getInstalledApps() || []).map(function (app) { return { id: app.id, title: app.title || app.id }; });
+      luna('com.webos.service.settings/getSystemSettings', {
+        category: 'time', keys: ['onTimerEnable', 'onTimerHour', 'onTimerMinute', 'onTimerWeekday', 'autoOff2HourOnTimer']
+      }, function (reply) {
+        var nativeTimers = timers.fromSettings(reply && reply.returnValue !== false ? reply.settings : null);
+        result.timer = nativeTimers && nativeTimers.on || null;
+        send(res, 200, JSON.stringify(result));
+      });
+    }
+    if (req.method === 'GET') return scheduledReply();
+    if (req.method !== 'POST') return send(res, 405, JSON.stringify({ ok: false, error: 'GET or POST required' }));
+    if (!config.allowControl) return send(res, 403, JSON.stringify({ ok: false, error: msg('srv.controlsOff', 'controls disabled in config') }));
+    return readJsonBody(req, res, function (body) {
+      var checked = scheduledModule.validate(body);
+      if (checked.error) return send(res, 400, JSON.stringify({ ok: false, error: checked.error }));
+      writeSettings({ scheduledApps: checked.value }, function (error) {
+        if (error) return send(res, 500, JSON.stringify({ ok: false, error: 'could not save schedule' }));
+        scheduledModule.apply(checked.value);
+        scheduledReply();
+      });
+    });
   }
 
   if (pathname === '/api/remote-desktop') {
@@ -2104,6 +2136,7 @@ function init(opts) {
   if (opts.history) historyModule = opts.history;
   if (opts.sshKeys) sshKeysModule = opts.sshKeys;
   if (opts.screentime) screentimeModule = opts.screentime;
+  if (opts.scheduled) scheduledModule = opts.scheduled;
   if (opts.backup) backupModule = opts.backup;
   if (opts.fromHomebrewChannel) fromHbcFn = opts.fromHomebrewChannel;
   if (opts.tileHidingOff) tileHidingOffMsg = opts.tileHidingOff;

@@ -1,0 +1,20 @@
+.scheduled-intro h2{font:400 32px Outfit,sans-serif;margin:0 0 10px}
+.scheduled-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:28px;max-width:1200px}
+.scheduled-card{padding:24px;border:1px solid var(--w25);border-radius:14px;min-width:0}
+.scheduled-card h3{font:400 21px Outfit,sans-serif;margin:0 0 20px}
+.scheduled-check{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:14px}
+.scheduled-time{display:flex;align-items:center;gap:18px;margin:20px 0;font-size:14px}
+.scheduled-time input{width:140px}
+.scheduled-days{display:flex;gap:14px;flex-wrap:wrap;margin:20px 0;font-size:12px}
+.scheduled-days label{display:flex;align-items:center;gap:5px}
+.scheduled-app-row{display:flex;gap:10px;align-items:end;padding:16px 0;border-bottom:1px solid var(--w12);flex-wrap:wrap}
+.scheduled-app-row select{flex:1;min-width:160px;max-width:100%}
+.scheduled-delay{display:flex;flex-direction:column;gap:7px;font-size:11px;color:var(--w70)}
+.scheduled-delay input{width:100px}
+.scheduled-actions{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.scheduled-card .sub{line-height:1.6}
+.scheduled-history{margin-top:26px;max-width:1200px}
+.scheduled-history ul{padding-left:20px;font-size:13px;line-height:2;color:var(--w70)}
+#scheduled-message{margin-top:18px;min-height:20px;font-size:13px;color:var(--w70)}
+#scheduled-message.bad{color:var(--red)}
+@media(max-width:960px){.scheduled-grid{grid-template-columns:1fr}.scheduled-card{padding:18px}}

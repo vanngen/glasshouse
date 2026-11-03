@@ -2212,3 +2212,20 @@ came at 50 s: about 9 s from the server answering to the view drawn. The
 first Home press after a reboot took up to 13 s on a CX (webOS 5.6.2), so a
 fixed wait from the server's start is too short for slower TVs; the page's
 own requests to the server show it is running.
+# On Timer wake and app launch (C4, webOS 10.3.1)
+
+Measured on 1 November 2026 on OLED55C43LA.DEUQLJP, firmware 33.31.61.
+The native On Timer was temporarily armed for 01:22 Europe/Berlin, once,
+through Glasshouse's existing `powerTimer` control. With Live TV configured
+and no tuned channel, that control selected Home before rearming the timer.
+
+After a `powerOff`, the TV woke itself at the target time. The power service
+reported `reason: "onTimer"`. Its `getPowerOnTime` values allowed a launch
+delay to be measured from the actual wake rather than from the server start:
+Web Browser launched at ten seconds and `getForegroundAppInfo` confirmed
+`com.webos.app.browser`. The run journal recorded completion. The original
+native timer fields and app schedule were restored and Spotify was reopened.
+
+The TV's `/etc/configd/layers/base/com.webos.service.tvpower.json` lists
+`onTimer` separately from `onAoDByOnTimer` and `warmByAODOnTimer`; those latter
+Always Ready/background reasons are not accepted by the app scheduler.

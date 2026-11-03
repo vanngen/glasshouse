@@ -59,5 +59,9 @@
     "check": false,
     "intervalHours": 24,
     "client": ""
+  },
+  "scheduledApps": {
+    "enabled": false,
+    "actions": []
   }
 }

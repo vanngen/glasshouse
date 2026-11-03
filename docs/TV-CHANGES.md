@@ -190,3 +190,12 @@ on localhost port 5900. No new listener or boot hook is added. The optional
 and returned only through its authenticated API while controls are enabled.
 Disabling the feature prevents new connections; restart Glasshouse to close
 existing sessions. This customization does not change VNCServer's own settings.
+# Scheduled apps after timer wake
+
+The optional `scheduledApps` configuration launches selected installed apps
+after a `tvpower` `onTimer` wake. It observes the existing power subscription,
+reads wake reason and uptime, and calls the normal application launch control.
+It stores a private run journal at `/var/lib/tvweb/scheduled-apps-state.json`
+to prevent duplicate launches. The Scheduled tab can edit LG's existing
+power-on timer using the same control as the System tab. No extra process,
+listener, PC service or boot hook is installed. App schedules default to off.

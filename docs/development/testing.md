@@ -1,5 +1,11 @@
 # Testing and CI
 
+`test-scheduled.js` exercises exact timer-wake matching, delay order, durable
+deduplication and pending-action recovery, cancellation, validation, missing
+apps and launch failures with an injected clock. `test-scheduled-routes.js`
+checks authentication, Origin and content-type guards, read-only behavior,
+native timer reads and config persistence.
+
 `test-vncproxy.js` checks the Live TV token, Origin, Host and control guards,
 and forwards upgrade head buffers and data through a local test VNC endpoint.
 The deployment asset check normalizes paths to forward slashes on Windows.

@@ -36,6 +36,11 @@ manual reconciliation. The separate viewer and proxy modules normally do not
 overlap with upstream edits. Local config files are ignored by Git and should
 remain private.
 
+Timer-triggered app launches are isolated in `server/lib/scheduled.js` and
+`server/assets/ui/scheduled.js` with a separate stylesheet. They attach to the
+existing power-state subscription and reuse LG's native timer control. Keep
+`scheduledApps` in the TV's config and its run journal when redeploying.
+
 After validation, push the merged branch to the fork and deploy it from Git
 Bash on the PC:
 

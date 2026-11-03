@@ -98,6 +98,7 @@ var ntpClient = require('./lib/ntp');
 var history = require('./lib/history');
 var sshKeys = require('./lib/sshkeys');
 var screentime = require('./lib/screentime');
+var scheduled = require('./lib/scheduled');
 var saverPowerOff = require('./lib/saverpoweroff');
 var remoteBattery = require('./lib/remotebattery');
 var backup = require('./lib/backup');
@@ -943,6 +944,7 @@ routes.init({
   history: history,
   sshKeys: sshKeys,
   screentime: screentime,
+  scheduled: scheduled,
   backup: backup,
   configFile: CONFIG_FILE,
   controls: controls,
@@ -1924,6 +1926,8 @@ if (!CLI_MODE) {
   history.start();
   screentime.init({ config: CONFIG, liveState: liveState, control: controls.doControl, injectKey: controls.injectKey, keyBack: controls.KEY_BACK });
   screentime.start();
+  scheduled.init({ config: CONFIG, liveState: liveState, luna: luna, control: controls.doControl });
+  scheduled.start();
   saverPowerOff.init({ config: CONFIG, liveState: liveState, control: controls.doControl });
   saverPowerOff.start();
 

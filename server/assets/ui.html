@@ -9,6 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="apple-touch-icon" href="/assets/dashboard-app/assets/icon130.png">
 <link rel="stylesheet" href="/assets/ui/ui.css">
+<link rel="stylesheet" href="/assets/ui/scheduled.css">
 </head>
 <body>
 
@@ -64,6 +65,7 @@
   <nav class="tabs" id="tabs" role="tablist" aria-orientation="vertical">
     <button type="button" role="tab" data-tab="control"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2.5" width="8" height="19" rx="3"/><circle cx="12" cy="8" r="1.6"/><path d="M10.5 13h3M10.5 16h3"/></svg><span data-t="tab.control">Control</span></button>
     <button type="button" role="tab" data-tab="liveview"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span data-t="tab.liveview">Live TV</span></button>
+    <button type="button" role="tab" data-tab="scheduled"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M8 15h3M8 18h6"/></svg><span data-t="tab.scheduled">Scheduled</span></button>
     <button type="button" role="tab" data-tab="metrics"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg><span data-t="tab.metrics">Metrics</span></button>
     <button type="button" role="tab" data-tab="apps"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg><span data-t="tab.apps">Apps</span></button>
     <button type="button" role="tab" data-tab="home" id="tab-btn-home" hidden><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6.5 8 6.5"/><path d="M6.5 9.5V19h11V9.5"/><path d="M10.5 19v-5h3v5"/></svg><span data-t="tab.home">Home</span></button>
@@ -137,6 +139,31 @@
 </div>
 
 <main id="panels">
+<section class="panel" id="scheduledpane" role="tabpanel" hidden>
+  <div class="scheduled-intro"><h2 data-t="scheduled.title">Scheduled</h2>
+    <p class="sub" data-t="scheduled.subtitle">Start your apps automatically after the TV wakes with its power-on timer.</p></div>
+  <div class="scheduled-grid">
+    <form id="scheduled-timer-form" class="scheduled-card">
+      <h3 data-t="scheduled.timerTitle">Power-on timer</h3>
+      <label class="scheduled-check"><input type="checkbox" id="scheduled-timer-enabled"><span data-t="scheduled.timerEnabled">Wake the TV on a timer</span></label>
+      <label class="scheduled-time"><span data-t="scheduled.time">Time on the TV</span><input id="scheduled-timer-time" type="time" required aria-label="Power-on time" data-t-aria-label="scheduled.timeLabel"></label>
+      <div id="scheduled-days" class="scheduled-days" role="group" aria-label="Repeat days" data-t-aria-label="scheduled.days"></div>
+      <p class="sub" id="scheduled-timer-note">&mdash;</p>
+      <div class="scheduled-actions"><button type="submit" id="scheduled-timer-save" data-t="scheduled.timerSave">Save power-on timer</button></div>
+    </form>
+    <form id="scheduled-apps-form" class="scheduled-card">
+      <h3 data-t="scheduled.appsTitle">Apps after timer wake</h3>
+      <label class="scheduled-check"><input type="checkbox" id="scheduled-enabled"><span data-t="scheduled.enabled">Enable scheduled app launches</span></label>
+      <p class="sub" data-t="scheduled.appsHint">Each delay is measured from power-on. Apps open in delay order; the last one stays in front. Normal remote-control wake-ups do not trigger this list.</p>
+      <div id="scheduled-apps-list"></div>
+      <div class="scheduled-actions"><button type="button" id="scheduled-add" data-t="scheduled.add">Add app</button><button type="submit" id="scheduled-save" data-t="scheduled.save">Save apps</button></div>
+      <p class="sub" data-t="scheduled.spotifyNote">Opening Spotify does not automatically start a playlist. Playback may need a separate automation.</p>
+    </form>
+  </div>
+  <div id="scheduled-message" role="status" aria-live="polite"></div>
+  <section class="scheduled-history"><h3 data-t="scheduled.history">Activity</h3><p id="scheduled-wake" class="sub">&mdash;</p><p id="scheduled-run" class="sub">&mdash;</p><ul id="scheduled-results"></ul></section>
+</section>
+
 <section class="panel" id="liveviewpane" role="tabpanel" hidden>
   <div class="liveview-heading">
     <div><h2 data-t="live.title">Live TV</h2><p class="sub" data-t="live.subtitle">See the TV interface and control it with your mouse and keyboard.</p></div>
@@ -1826,6 +1853,7 @@
 <script src="/assets/ui/search-aliases.js"></script>
 <script src="/assets/ui/search.js"></script>
 <script src="/assets/ui/liveview.js"></script>
+<script src="/assets/ui/scheduled.js"></script>
 <script src="/assets/ui/tabs.js"></script>
 <script src="/assets/ui/main.js"></script>
 </body>

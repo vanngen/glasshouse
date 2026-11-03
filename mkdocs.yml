@@ -41,6 +41,7 @@ nav:
   - The dashboard:
       - dashboard/index.md
       - Control: dashboard/control.md
+      - Scheduled: dashboard/scheduled.md
       - Metrics: dashboard/metrics.md
       - Apps: dashboard/apps.md
       - Home: dashboard/home.md
