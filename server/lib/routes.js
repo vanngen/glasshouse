@@ -1336,6 +1336,7 @@ function handleRequest(req, res) {
         return calendarReply({ ok: true });
       }
       if (pathname === '/api/calendar/tasks/complete' && todoModule) return todoModule.complete(body, calendarReply);
+      if (pathname === '/api/calendar/tasks/undo' && todoModule) return todoModule.undo(body, calendarReply);
       send(res, 404, JSON.stringify({ ok: false, error: 'Unknown calendar action' }));
     });
   }

@@ -215,3 +215,7 @@ consent. Its task cache stays in memory. Selecting a known incomplete task
 on Home sends only `{ "status": "completed" }` to that task's Microsoft Graph
 endpoint. Calendar access remains read-only. Task completion uses the existing
 dashboard authentication, control permission and same-origin JSON guards.
+Balanced Home offers Undo for ten seconds after completion. The server keeps
+the most recently completed task in memory and accepts Undo for at most fifteen
+seconds, restoring only its original status through the same guarded route. Disconnecting
+or changing the Microsoft connection clears this record.

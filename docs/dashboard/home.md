@@ -7,6 +7,30 @@
 
 ## What is on screen
 
+### Balanced layout
+
+**Home layout** on either dashboard cycles between **Balanced**, **Standard** and
+**Alternative View**. Balanced is the default for a new layout; saved Standard
+and Alternative layouts keep their choice.
+
+Balanced places the clock and date at the top left, two appointments and up to
+three tasks in the middle, and the Apps row along the bottom. Inputs, channels,
+recommendations, Last watched, picture details and the app count are left out.
+Their settings and row order are kept for the other layouts. Holding OK still
+opens arranging, where every row can be managed.
+
+Calendar and task pages stay still while reading. **Next appointments** advances
+the calendar; with the remote, press Up from Apps to Tasks, Up from the first
+task to Refresh, then Left to Next appointments and OK to advance. Right from
+Next appointments returns to Tasks. With no tasks, Up from Apps reaches Refresh
+directly. Right within Tasks advances its pages. Back or Left returns to Apps.
+The Magic Remote pointer can activate Next appointments too.
+
+After a task completes, an **Undo** row is available for ten seconds. Select it
+with the remote or pointer to restore the task's original status. Failed writes
+keep the task in its preceding state. Focused long task titles use two lines in
+place of their metadata.
+
 ### Outlook calendar and To Do
 
 The Home tab's **Outlook calendar & To Do** section connects a personal Microsoft
@@ -20,7 +44,8 @@ Glasshouse Home shows the default calendar's upcoming appointments over the
 next seven days, including recurring and all-day events. The agenda blends into
 the wallpaper above the launcher rows, without a panel or border. Apps keep
 their full width. The agenda fits one to four appointments into the available
-space and rotates longer lists every fifteen seconds. It refreshes every five
+space in Standard and Alternative and rotates longer lists every fifteen seconds
+in those layouts. Balanced uses manual paging. It refreshes every five
 minutes. Times follow the TV browser's local timezone. Appointment titles are
 shown even when an event is marked private in Outlook. A failed refresh labels the cached agenda as stale.
 Pending Microsoft approval and initial loading have separate status messages;
@@ -34,7 +59,7 @@ configured from the web dashboard; the TV dashboard has no connection controls.
 To Do appears to the right of the calendar, showing incomplete tasks from all
 lists. Due dates and overdue items are shown with each list's name. Tasks with
 due dates appear first, then undated tasks. Longer lists rotate while the list
-is unfocused. From the top app row, press Up to focus tasks, Up/Down to move,
+is unfocused in Standard and Alternative. From the top app row, press Up to focus tasks, Up/Down to move,
 Right for the next page, OK to complete, and Back or Left to return to the apps.
 The Magic Remote pointer can select and complete tasks too. A task disappears
 only after Microsoft confirms completion. No task title, deadline or other
@@ -46,7 +71,7 @@ immediately. With the remote, press Up from the first task to reach it, then
 OK. With no tasks, Up from the top app row goes straight to Refresh. Back or
 Left returns to the apps. The button also works with the Magic Remote pointer.
 
-Glasshouse Home displays a clock and date (following the TV's 12-hour or 24-hour time setting), the last active source or app, and up to four rows (any row with no visible items is automatically hidden):
+Standard and Alternative display a clock and date (following the TV's 12-hour or 24-hour time setting), the last active source or app, and up to four rows (any row with no visible items is automatically hidden):
 
 <div class="grid cards" markdown>
 

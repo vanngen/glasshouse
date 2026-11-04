@@ -1089,7 +1089,7 @@ function glasshouseHomeRows(d) {
     var picOn = d.layout.picture === true;
     r.push({ label: t('home.picture', 'Picture details'),
              value: picOn ? t('common.on', 'On') : t('common.off', 'Off'), cls: picOn ? 'on' : 'off',
-             act: can ? 'homePicture' : null, on: picOn,
+             act: can && d.layout.view !== 'balanced' ? 'homePicture' : null, on: picOn,
              press: picOn ? t('tv.press.switchOff', 'Press OK to switch off') : t('tv.press.switchOn', 'Press OK to switch on'),
              hint: t('home.pictureDesc', 'In the top right of Glasshouse Home: the resolution, refresh rate and HDR of what was last on, and the picture mode and brightness it gets.') });
     var shows = [['showClock', t('home.showClock', 'Clock and date'), t('home.showClockDesc', 'At the top of Glasshouse Home. Switched off, the space stays empty.')],
@@ -1099,25 +1099,24 @@ function glasshouseHomeRows(d) {
     for (var si = 0; si < shows.length; si++) {
       var showOn = d.layout[shows[si][0]] !== false;
       // Alternative View's rows have no titles, so no app count beside them.
-      var unused = shows[si][0] === 'showAppCount' && d.layout.view === 'alternative';
+      var balancedView = d.layout.view === 'balanced';
+      var unused = (shows[si][0] === 'showAppCount' && d.layout.view === 'alternative') || (balancedView && si !== 0);
       r.push({ label: shows[si][1], key: shows[si][0],
                value: showOn ? t('common.on', 'On') : t('common.off', 'Off'), cls: showOn && !unused ? 'on' : 'off',
                act: can && !unused ? 'homeShow' : null, on: showOn,
                press: showOn ? t('tv.press.switchOff', 'Press OK to switch off') : t('tv.press.switchOn', 'Press OK to switch on'),
-               hint: unused ? t('home.showAppCountAlt', 'Not shown in Alternative View, whose rows have no titles.') : shows[si][2] });
+               hint: balancedView && unused ? t('home.balancedFixed', 'Balanced shows the clock, calendar, tasks and apps. Other display settings are kept for the other layouts.') : unused ? t('home.showAppCountAlt', 'Not shown in Alternative View, whose rows have no titles.') : shows[si][2] });
       if (si === 0) {
         var bottomOn = d.layout.rowsBottom === true;
         r.push({ label: t('home.rowsBottom', 'Rows along the bottom'), key: 'rowsBottom',
                  value: bottomOn ? t('common.on', 'On') : t('common.off', 'Off'), cls: bottomOn ? 'on' : 'off',
-                 act: can ? 'homeShow' : null, on: bottomOn,
+                 act: can && !balancedView ? 'homeShow' : null, on: bottomOn,
                  press: bottomOn ? t('tv.press.switchOff', 'Press OK to switch off') : t('tv.press.switchOn', 'Press OK to switch on'),
                  hint: t('home.rowsBottomDesc', 'The rows of apps and inputs sit along the bottom of the screen, as on LG\u2019s Home, rather than in the middle.') });
-        var altOn = d.layout.view === 'alternative';
-        r.push({ label: t('home.alternative', 'Alternative View'),
-                 value: altOn ? t('common.on', 'On') : t('common.off', 'Off'), cls: altOn ? 'on' : 'off',
-                 act: can ? 'homeAlternative' : null, on: altOn,
-                 press: altOn ? t('tv.press.switchOff', 'Press OK to switch off') : t('tv.press.switchOn', 'Press OK to switch on'),
-                 hint: t('home.alternativeDesc', 'A smaller clock on the right, and the rows as rounded, translucent tiles, titled only while arranging.') });
+        r.push({ label: t('home.view', 'Home layout'),
+                 value: balancedView ? t('home.viewBalanced', 'Balanced') : d.layout.view === 'alternative' ? t('home.alternative', 'Alternative View') : t('home.viewStandard', 'Standard'),
+                 act: can ? 'homeAlternative' : null, view: d.layout.view,
+                 hint: d.layout.view === 'alternative' ? t('home.alternativeDesc', 'A smaller clock on the right, and the rows as rounded, translucent tiles, titled only while arranging.') : t('home.viewDesc', 'Balanced puts the clock above calendar and tasks, with apps along the bottom. Standard and Alternative keep the other launcher rows.') });
       }
     }
     var searchOn = d.layout.search === true, blocked = d.layout.searchBlocked;
@@ -2932,7 +2931,7 @@ function activate() {
     case 'homeSearch':
       return homeLayout({ search: !r.on });
     case 'homeAlternative':
-      return homeLayout({ view: r.on ? 'standard' : 'alternative' });
+      return homeLayout({ view: r.view === 'balanced' ? 'standard' : r.view === 'standard' ? 'alternative' : 'balanced' });
     case 'homeFade':
       return homeLayout({ fade: !r.on });
     case 'homeRecommended':

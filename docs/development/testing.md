@@ -365,3 +365,10 @@ navigation, failed completion and held-OK deduplication. Microsoft task access
 and completion still require consent and an on-TV check with a real account.
 Calendar and task cache tests also exercise manual refresh; the browser check
 covers reaching Refresh with the remote and activating it with OK.
+It also checks Balanced with a saved row order putting Apps last: only Apps
+shows, focus stays reachable, calendar and task pages advance manually, long
+focused titles fit, completion can be undone, undo expires, and empty or
+disconnected lists leave app navigation usable. `BALANCED_SCREENSHOT` saves a
+populated 1080p preview. The To Do unit tests cover undo identity checks,
+original-status restoration, failure, duplicate requests, expiry and account
+isolation.

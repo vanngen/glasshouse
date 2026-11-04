@@ -138,7 +138,8 @@ var routeConfig = { token: 'dashboard-test-token', allowControl: true };
 routes.init({ config: routeConfig, calendar: routeCalendar.calendar });
 var completedFromRoute = 0;
 var refreshedFromRoute = 0;
-routes.init({ todo: { list: function () { return { ok: true, tasks: [] }; }, refresh: function () { refreshedFromRoute++; return { ok: true }; }, complete: function (body, cb) { completedFromRoute++; cb({ ok: true }); } } });
+var undoneFromRoute = 0;
+routes.init({ todo: { list: function () { return { ok: true, tasks: [] }; }, refresh: function () { refreshedFromRoute++; return { ok: true }; }, complete: function (body, cb) { completedFromRoute++; cb({ ok: true }); }, undo: function (body, cb) { undoneFromRoute++; cb({ ok: true }); } } });
 function route(method, endpoint, key, headers) {
   var req = new EventEmitter(), response = {};
   req.url = '/api/calendar/' + endpoint + (key ? '?k=' + key : '');
@@ -170,6 +171,14 @@ assert.strictEqual(route('POST', 'refresh', routeConfig.token, { 'content-type':
 assert.strictEqual(refreshedFromRoute, 0);
 assert.strictEqual(route('POST', 'refresh', routeConfig.token, { 'content-type': 'application/json' }).code, 200);
 assert.strictEqual(refreshedFromRoute, 1);
+routeConfig.allowControl = false;
+assert.strictEqual(route('POST', 'tasks/undo', routeConfig.token, { 'content-type': 'application/json' }).code, 403);
+routeConfig.allowControl = true;
+assert.strictEqual(route('POST', 'tasks/undo', null, { 'content-type': 'application/json' }).code, 401);
+assert.strictEqual(route('POST', 'tasks/undo', routeConfig.token, { 'content-type': 'application/json', origin: 'https://attacker.example', host: 'tv.local' }).code, 403);
+assert.strictEqual(undoneFromRoute, 0);
+assert.strictEqual(route('POST', 'tasks/undo', routeConfig.token, { 'content-type': 'application/json' }).code, 200);
+assert.strictEqual(undoneFromRoute, 1);
 console.log('calendar routes: authentication, no-store, CSRF and control permission passed');
 fs.readdirSync(dir).forEach(function (name) { fs.unlinkSync(path.join(dir, name)); });
 fs.rmdirSync(dir);

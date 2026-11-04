@@ -2018,18 +2018,24 @@ step('the clock shows until switched off, the rows sit along the bottom only whe
   });
 });
 
-step('Alternative View is off until chosen, saved, and anything but alternative is standard', function (done) {
+step('Balanced is the default; saved Standard and Alternative layouts retain their view', function (done) {
   start(null);
-  assert.strictEqual(home.layout().view, 'standard');
+  assert.strictEqual(home.layout().view, 'balanced');
+  assert.strictEqual(home.normalise({ view: 'balanced' }).view, 'balanced');
+  assert.strictEqual(home.normalise({ view: 'standard' }).view, 'standard');
   home.setLayout({ view: 'alternative' }, function (r) {
     assert.strictEqual(r.layout.view, 'alternative');
     var saved = home.normalise(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')));
     assert.strictEqual(saved.view, 'alternative');
     home.setLayout({ rowsBottom: true }, function (r2) {
       assert.strictEqual(r2.layout.view, 'alternative', 'kept by a save that does not name it');
-      home.setLayout({ view: 'compact' }, function (r3) {
-        assert.strictEqual(r3.layout.view, 'standard');
-        done();
+      home.setLayout({ view: 'balanced' }, function (r3) {
+        assert.strictEqual(r3.layout.view, 'balanced');
+        assert.strictEqual(home.normalise(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8'))).view, 'balanced');
+        home.setLayout({ view: 'compact' }, function (r4) {
+          assert.strictEqual(r4.layout.view, 'standard');
+          done();
+        });
       });
     });
   });

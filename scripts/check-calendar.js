@@ -28,6 +28,7 @@ const server = http.createServer((req, res) => {
       channels: [], hintSeen: true, searchHintSeen: true, rowsBottom: true, view: 'alternative' };
     const tasks = { ok: true, connected: false, enabled: false, updated: stamp, tasks: [] };
     const completions = [];
+    let lastCompleted = null;
     let refreshes = 0;
     let failCompletion = false;
     await page.route('**/api/**', route => {
@@ -41,6 +42,7 @@ const server = http.createServer((req, res) => {
         if (failCompletion) return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'offline' }) });
         tasks.tasks = tasks.tasks.filter(task => task.id !== item.id || task.listId !== item.listId);
       }
+      if (url.pathname === '/api/calendar/tasks/undo' && lastCompleted) tasks.tasks.unshift(lastCompleted);
       if (url.pathname.endsWith('/catalogue')) body = { ok: true, layout, apps: [{ id: 'netflix', title: 'Netflix' }, { id: 'youtube', title: 'YouTube' }],
         devices: [{ id: 'hdmi1', title: 'HDMI 1', port: 1, connected: true }],
         channels: layout.channels.length ? [{ id: 'ch1', title: 'News', number: '1' }] : [],
@@ -146,6 +148,63 @@ const server = http.createServer((req, res) => {
     assert.strictEqual(refreshes, 1, 'OK on Refresh reloads calendar and tasks');
     await page.keyboard.press('Backspace');
     await page.keyboard.press('ArrowLeft');
+    layout.view = 'balanced'; layout.rows = ['dev', 'ch', 'app']; layout.rowsBottom = false; layout.showLastOn = true; layout.picture = true;
+    agenda.events = Array.from({ length: 5 }, (_, i) => ({ title: ['Dentist appointment', 'Dinner with friends', 'Project review', 'Train to Hamburg', 'Weekend plans'][i], start: stamp + (i + 1) * 86400000, end: stamp + (i + 1) * 86400000 + 3600000 }));
+    tasks.tasks = [
+      { id: 'documents', listId: 'personal', title: 'Prepare appointment documents', due: '2026-11-04', list: 'Personal' },
+      { id: 'train', listId: 'personal', title: 'Book train tickets', due: '2026-11-06', list: 'Personal' },
+      { id: 'shopping', listId: 'personal', title: 'Pick up groceries', due: null, list: 'Shopping' },
+      { id: 'long', listId: 'personal', title: 'A very long task title that should remain readable when focused with the remote', due: null, list: 'Personal' }
+    ];
+    failCompletion = false;
+    await page.reload();
+    await page.waitForSelector('#stage.balanced #todo-list .todo-task');
+    await page.waitForSelector('#rows .tile.focus');
+    await assertSeamless();
+    assert.strictEqual(await page.locator('#rows .row').count(), 1, 'Balanced shows only the app row');
+    assert.strictEqual(await page.locator('#source').isVisible(), false, 'Balanced omits Last watched even when enabled');
+    assert.strictEqual(await page.locator('#plate').isVisible(), false);
+    assert.strictEqual(await page.locator('#agenda .appointment').count(), 2);
+    assert.strictEqual(await page.locator('#todo-list .todo-task').count(), 3);
+    const initialTitles = await page.locator('#agenda-events').textContent();
+    await page.clock.fastForward(15000);
+    assert.strictEqual(await page.locator('#agenda-events').textContent(), initialTitles, 'Balanced does not rotate while reading');
+    if (process.env.BALANCED_SCREENSHOT) {
+      await page.evaluate(() => document.fonts.ready);
+      await page.clock.runFor(250);
+      await page.screenshot({ path: path.resolve(process.env.BALANCED_SCREENSHOT), animations: 'disabled' });
+    }
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowLeft');
+    assert.strictEqual(await page.locator('#agenda-next.focus').count(), 1, 'Refresh leads left to appointment paging');
+    await page.keyboard.press('Enter');
+    assert.notStrictEqual(await page.locator('#agenda-events').textContent(), initialTitles, 'OK advances appointments');
+    await page.keyboard.press('ArrowRight');
+    assert.strictEqual(await page.locator('#todo-list .todo-task.focus').count(), 1, 'Right reaches tasks');
+    await page.keyboard.press('ArrowRight');
+    assert((await page.locator('#todo-list').textContent()).includes('A very long task title'), 'Right advances tasks');
+    assert(await page.locator('#todo-list .todo-task.focus').evaluate(el => el.scrollHeight <= el.clientHeight), 'focused long task fits its row');
+    await page.keyboard.press('ArrowRight');
+    lastCompleted = tasks.tasks[0];
+    await page.keyboard.press('Enter');
+    await page.clock.runFor(100);
+    await page.waitForFunction(() => document.querySelector('#todo-list').textContent.includes('Undo:'));
+    await page.keyboard.press('Enter');
+    await page.clock.runFor(100);
+    await page.waitForFunction(() => !document.querySelector('#todo-list').textContent.includes('Undo:'));
+    assert((await page.locator('#todo-list').textContent()).includes('Prepare appointment documents'), 'Undo restores the completed task');
+    await page.keyboard.press('Enter');
+    await page.clock.runFor(100);
+    await page.waitForFunction(() => document.querySelector('#todo-list').textContent.includes('Undo:'));
+    await page.clock.fastForward(10001);
+    assert(!(await page.locator('#todo-list').textContent()).includes('Undo:'), 'undo expires cleanly');
+    await page.keyboard.press('ArrowLeft');
+    tasks.tasks = []; agenda.events = [];
+    await page.clock.fastForward(60000);
+    await page.clock.runFor(100);
+    await page.waitForFunction(() => document.getElementById('todo-note').textContent === 'All caught up');
+    assert.strictEqual(await page.locator('#rows .tile.focus').count(), 1, 'empty lists leave app navigation usable');
     tasks.connected = tasks.enabled = false; tasks.tasks = [];
     agenda.connected = false; agenda.events = [];
     await page.clock.fastForward(60000);

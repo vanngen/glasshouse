@@ -319,9 +319,8 @@ function defaults() {
     showCec: true,
     // The rows centred below the top strip, or along the bottom as on LG's Home.
     rowsBottom: false,
-    // standard, or alternative: a smaller clock on the right, and the rows
-    // as rounded, translucent tiles without their titles.
-    view: 'standard',
+    // Balanced reserves the middle for Outlook and the bottom for apps.
+    view: 'balanced',
     // Search on the view (lib/home-search): off by default, so nothing typed reaches LG unless switched on.
     search: false,
     // The Recommended row (lib/home-recommended): off by default, as its
@@ -389,7 +388,7 @@ function normalise(raw) {
   d.picture = raw.picture === true;
   SHOW_KEYS.forEach(function (k) { d[k] = raw[k] !== false; });
   d.rowsBottom = raw.rowsBottom === true;
-  d.view = raw.view === 'alternative' ? 'alternative' : 'standard';
+  d.view = raw.view === undefined ? 'balanced' : raw.view === 'balanced' || raw.view === 'alternative' ? raw.view : 'standard';
   d.search = raw.search === true;
   d.recommended = raw.recommended === true;
   // Its cards come and go with the apps' lists, so it keeps no order of its own.

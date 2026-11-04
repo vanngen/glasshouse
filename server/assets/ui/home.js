@@ -188,11 +188,13 @@ function renderHome() {
   document.querySelectorAll('.home-show-row').forEach(row => { row.hidden = !st.supported.ok; });
   // Alternative View's rows have no titles, so no app count beside them.
   const altView = !!st.layout && st.layout.view === 'alternative';
+  const balancedView = !!st.layout && st.layout.view === 'balanced';
+  if (pic) pic.disabled = !homeWritable() || balancedView;
   HOME_SHOW.forEach(([key, id]) => {
     const el = q(id);
     if (!el) return;
     const on = !st.layout || st.layout[key] !== false;
-    const unused = key === 'showAppCount' && altView;
+    const unused = (key === 'showAppCount' && altView) || (balancedView && key !== 'showClock');
     updateToggle(el, { cls: on && !unused ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
     el.disabled = !homeWritable() || unused;
   });
@@ -223,14 +225,14 @@ function renderHome() {
     if (!btn) return;
     const on = !!st.layout && st.layout[field] === true;
     updateToggle(btn, { cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
-    btn.disabled = !homeWritable();
+    btn.disabled = !homeWritable() || (balancedView && field === 'rowsBottom');
   });
   const altRow = q('home-alternative-row');
   if (altRow) altRow.hidden = !st.supported.ok;
   const alt = q('home-alternative');
   if (alt) {
-    const on = !!st.layout && st.layout.view === 'alternative';
-    updateToggle(alt, { cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
+    const view = st.layout && st.layout.view;
+    updateToggle(alt, { cls: 'idle', label: view === 'balanced' ? t('home.viewBalanced', 'Balanced') : view === 'alternative' ? t('home.alternative', 'Alternative View') : t('home.viewStandard', 'Standard') });
     alt.disabled = !homeWritable();
   }
   const hide = q('home-hide-lg');
@@ -619,7 +621,8 @@ function homeSearch() {
 }
 
 function homeAlternative() {
-  homeSaveLayout({ view: homeLayout.view === 'alternative' ? 'standard' : 'alternative' });
+  const views = ['balanced', 'standard', 'alternative'];
+  homeSaveLayout({ view: views[(views.indexOf(homeLayout.view) + 1) % views.length] });
 }
 
 function homeRowsBottom() {
