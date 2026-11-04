@@ -4,3 +4,4 @@
 *.sh            text eol=lf
 *.py            text eol=lf
 server/tvwebctl text eol=lf
+test/mocks/fake-luna-send.js text eol=lf

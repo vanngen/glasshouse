@@ -82,6 +82,15 @@ handed to another through init() is typed with
 
 # Working with a TV
 
+With multiple agents, use one branch, worktree, emulator container or VM, and
+local emulator port per agent. The filesystem mocks do not isolate `/tmp` or
+host commands; run interactive emulators inside that dedicated environment.
+Follow `docs/CONTRIBUTING.md`'s "Multiple agents and worktrees" setup
+and TV handoff procedure. Only the coordinator-assigned owner accesses the
+physical TV; other agents use local mocks. There is no enforced TV lock yet.
+Deploy only from a clean worktree and verify the installed build metadata
+and running build before attributing TV results to a commit.
+
 `scripts/tv.sh <address> version|app|luna|log|capture` covers the usual
 look at a rooted TV over SSH; run it with no arguments for its usage.
 

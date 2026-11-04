@@ -27,6 +27,98 @@ Focus on clarity and readability. Clearly state what changed and why, keeping pu
 
 If you are using AI coding assistants or automated agents, ensure they adhere to the repository conventions in `CLAUDE.md` (symlinked as `AGENTS.md`).
 
+### Multiple agents and worktrees
+
+Give each agent its own branch, worktree, emulator container or VM, and local
+emulator port. Worktrees
+isolate source files, dependencies and build output; they do not isolate the
+physical TV. Deploying another branch replaces the installation all agents
+would be testing, and power, inputs, settings and Home state are shared.
+
+From the Glasshouse Git repository root, create two worktrees from the agreed
+base commit (here, local `main`):
+
+```bash
+git worktree add -b agent/dashboard ../glasshouse-dashboard main
+git worktree add -b agent/controls ../glasshouse-controls main
+```
+
+Worktrees contain committed files from that base. Uncommitted changes in the
+original checkout are not included. To build on another branch, use its name
+instead of `main`. Assign one worktree to each agent and have it read that
+worktree's `AGENTS.md` before editing. Run `npm ci` separately in each worktree;
+do not share `node_modules` or generated output between them.
+
+In separate terminals, start an emulator from each worktree using the
+[container instructions](development/testing.md#parallel-emulator-instances).
+These Bash commands assume Docker with Linux containers is available; on
+Windows, run them in WSL with Docker integration enabled:
+
+```bash
+# Dashboard agent
+cd ../glasshouse-dashboard
+npm ci
+docker run --rm --init -it --cap-drop=ALL --security-opt=no-new-privileges \
+  --mount "type=bind,src=$(pwd),dst=/workspace,readonly" \
+  --workdir /workspace --publish 127.0.0.1:18081:18081 \
+  node:24-bookworm node scripts/emulate-tv.js --port 18081 --model c2
+```
+
+```bash
+# Controls agent
+cd ../glasshouse-controls
+npm ci
+docker run --rm --init -it --cap-drop=ALL --security-opt=no-new-privileges \
+  --mount "type=bind,src=$(pwd),dst=/workspace,readonly" \
+  --workdir /workspace --publish 127.0.0.1:18082:18082 \
+  node:24-bookworm node scripts/emulate-tv.js --port 18082 --model b8
+```
+
+Each terminal starts at the original repository root. Open
+`http://localhost:18081/` or `http://localhost:18082/`, using the port printed
+by that emulator. Use a separate browser profile or browser context per agent
+to keep browser storage and sessions apart. See
+[Local TV emulation](development/testing.md#local-tv-emulation) for the other
+views and limits. Run tests and checks from the agent's own worktree.
+
+#### Sharing the real TV
+
+Choose one coordinator to assign exclusive TV access. An agent without that
+assignment uses local emulation and fixtures. This is a coordination rule;
+the deployment and TV tools do not currently enforce a lock.
+
+1. Before any TV access, record the owner, TV address, worktree, branch,
+   commit and intended checks in the shared task or handoff message. Only
+   that owner uses the TV until the handoff, including diagnostic reads that
+   might otherwise observe a changing installation.
+2. The owner records the current installed version and relevant settings,
+   then checks the deployment worktree with `git status --porcelain
+   --untracked-files=all`. It must print nothing. Record `git rev-parse HEAD`
+   and `git rev-parse --short HEAD`, and keep that worktree unchanged through
+   deployment and testing. `deploy.sh` copies working-tree files and permits
+   dirty builds; a commit ID alone does not identify those files. Keep a
+   known good commit available for recovery. No other agent deploys, restarts,
+   changes settings or runs TV checks during this interval.
+3. Deploy from that clean worktree. Read `/var/lib/tvweb/build.json` on the
+   TV and confirm its `commit` matches the recorded short ID, `dirty` is
+   `false`, and its `version` matches the candidate. Confirm the running
+   dashboard reports that build after restart. Record both the full local
+   commit ID and the installed metadata. Missing or mismatched metadata, a
+   dirty build or a failed restart must be resolved before recording results
+   against that commit. Check the worktree is still clean after deployment.
+4. Record the model, webOS version, tested commit, actions and observed
+   results. Restore settings changed only for the test, and leave the TV on
+   an explicitly recorded build with its remaining state described.
+5. Release access explicitly. A subsequent owner deploys its own candidate
+   before testing; it must not assume the preceding branch is still installed.
+   If an owner stops responding, the coordinator confirms no TV commands
+   remain active and records a takeover before another agent uses it.
+
+Local checks can run concurrently with another agent's TV checks. Emulator
+results do not replace hardware validation: a PR not tried on a real TV stays
+a draft, with the local results and missing hardware checks recorded in its
+Testing section.
+
 ## Code reviews
 
 We prefer code review comments to follow the [Conventional Comments](https://conventionalcomments.org/) standard (e.g. `praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`). This keeps feedback constructive, actionable, and makes it clear whether a comment is blocking or an optional suggestion. Refer to [conventionalcomments.org](https://conventionalcomments.org/) for the complete specification and examples.
@@ -100,7 +192,10 @@ All automated checks must pass cleanly.
 
 ### Previewing UI changes locally
 
-To visually preview and interact with the web dashboard, TV app, or Glasshouse Home on your computer without a physical TV:
+To visually preview and interact with the web dashboard, TV app, or Glasshouse
+Home without a physical TV, first follow the
+[container or VM setup](#multiple-agents-and-worktrees). Run these commands
+inside that isolated environment; the mock runner can execute host commands:
 
 ```bash
 npm run emulate
