@@ -346,3 +346,22 @@ The sideload route check forces an upload to abort before its file opens,
 then confirms that the eventual descriptor closes and the staging file is
 removed. This catches Node 0.12's destroy-before-open behaviour without
 relying on the filesystem finishing within a fixed delay.
+
+## Calendar connection tests
+
+`node test/test-calendar.js` checks Microsoft device-code polling, token
+rotation, safe status responses, recurring-event queries, pagination, stale
+cache behavior and disconnect races with a simulated Microsoft transport.
+Real Microsoft consent and the TV's curl/TLS path still need an on-device check.
+`node scripts/check-calendar.js` checks agenda layout above full-width app rows
+in classic and alternative views, plain-text titles,
+paging, all-day labels, stale state and disconnect in Edge with synthetic
+events. It requires `playwright-core`; `BROWSER_CHANNEL` selects another browser.
+
+`node test/test-todo.js` covers task consent, date-only deadlines, list/page
+aggregation, sorting, failed refreshes, confirmed completion and account races.
+The calendar browser check also covers the side-by-side task list, remote
+navigation, failed completion and held-OK deduplication. Microsoft task access
+and completion still require consent and an on-TV check with a real account.
+Calendar and task cache tests also exercise manual refresh; the browser check
+covers reaching Refresh with the remote and activating it with OK.

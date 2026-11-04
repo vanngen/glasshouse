@@ -48,6 +48,7 @@ async function loadHomeAvailable() {
 }
 
 async function loadHome(afterSave) {
+  loadHomeCalendar();
   if (homeSaving && afterSave !== true) return;
   const revision = ++homeLoadRevision;
   try {
@@ -61,6 +62,45 @@ async function loadHome(afterSave) {
   if (!homeAvailable && activeTab === 'home') return showTab('control');
   renderHome();
 }
+
+let homeCalendarTimer = null;
+let homeCalendarBusy = false;
+async function loadHomeCalendar() {
+  if (homeCalendarTimer) clearTimeout(homeCalendarTimer);
+  try {
+    const st = await homeGet('/api/calendar/status');
+    const input = q('home-calendar-client');
+    if (document.activeElement !== input) input.value = st.clientId;
+    q('home-calendar-status').textContent = st.message || (st.pending
+      ? t('home.calendar.enterCode', 'Open Microsoft sign-in and enter this code. Approve access for Glasshouse Calendar.')
+      : st.connected ? (st.tasksEnabled ? t('home.outlook.connected', 'Connected. Calendar and To Do appear on Glasshouse Home.')
+        : t('home.outlook.reconnect', 'Calendar connected. Connect Outlook again to enable To Do.'))
+        : t('home.calendar.disconnected', 'Outlook is not connected.'));
+    q('home-calendar-login').hidden = !st.pending;
+    q('home-calendar-disconnect').hidden = !(st.connected || st.pending);
+    if (st.pending) {
+      q('home-calendar-code').textContent = st.pending.code;
+      q('home-calendar-link').href = st.pending.url;
+      if (activeTab === 'home') homeCalendarTimer = setTimeout(loadHomeCalendar, 3000);
+    }
+  } catch (e) { q('home-calendar-status').textContent = e.message; }
+}
+
+async function homeCalendarAction(path, body) {
+  if (homeCalendarBusy) return;
+  homeCalendarBusy = true;
+  q('home-calendar-connect').disabled = q('home-calendar-disconnect').disabled = true;
+  try { await homePost(path, body); await loadHomeCalendar(); }
+  catch (e) { q('home-calendar-status').textContent = e.message; }
+  finally {
+    homeCalendarBusy = false;
+    q('home-calendar-connect').disabled = q('home-calendar-disconnect').disabled = false;
+  }
+}
+function homeCalendarConnect() {
+  return homeCalendarAction('/api/calendar/connect', { clientId: q('home-calendar-client').value.trim() });
+}
+function homeCalendarDisconnect() { return homeCalendarAction('/api/calendar/disconnect', {}); }
 
 function homeWritable() { return !!(!homeSaving && homeStatus && (homeStatus.supported.ok || homeStatus.enabled || homeStatus.restorePending) && homeStatus.writable !== false); }
 

@@ -1,5 +1,6 @@
 .DS_Store
 server/config*.json
+server/outlook-calendar.json*
 *.log
 .log/
 .tvweb_httpd

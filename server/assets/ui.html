@@ -1094,6 +1094,19 @@
 
   <!-- Home customisation, whichever Home is the TV's: power-on, Glasshouse Home's
        own options while it is on, LG's Home's layout while that is, and system apps -->
+  <div class="pv-sec adv-sec" data-t="home.outlook.title">Outlook calendar &amp; To Do</div>
+  <div class="sub" data-t="home.outlook.desc">Show appointments and tasks on Glasshouse Home. Microsoft sign-in grants read-only calendar access and permission to complete To Do tasks.</div>
+  <div class="cfg-f">
+    <label for="home-calendar-client" data-t="home.calendar.client">Microsoft application client ID</label>
+    <input id="home-calendar-client" type="text" autocomplete="off" spellcheck="false" translate="no">
+  </div>
+  <div class="btns">
+    <button type="button" id="home-calendar-connect" onclick="homeCalendarConnect()" data-t="home.calendar.connect">Connect Outlook</button>
+    <button type="button" id="home-calendar-disconnect" onclick="homeCalendarDisconnect()" hidden data-t="home.calendar.disconnect">Disconnect Outlook</button>
+  </div>
+  <p id="home-calendar-status" class="sub" aria-live="polite">&mdash;</p>
+  <p id="home-calendar-login" class="sub" hidden><a id="home-calendar-link" target="_blank" rel="noopener noreferrer" data-t="home.calendar.signIn">Open Microsoft sign-in</a> &middot; <strong id="home-calendar-code" translate="no"></strong></p>
+
   <div id="home-custom" hidden>
   <div class="pv-sec" data-t="home.customisation">Home customisation</div>
   <div class="prot-table" id="home-custom-table">

@@ -112,6 +112,10 @@ var sshKeysModule = null;
 var screentimeModule = null;
 /** @type {typeof import('./scheduled')} */
 var scheduledModule = null;
+/** @type {ReturnType<typeof import('./calendar').create>} */
+var calendarModule = null;
+/** @type {ReturnType<typeof import('./todo').create>} */
+var todoModule = null;
 /** @type {typeof import('./backup')} */
 var backupModule = null;
 var fromHbcFn = null;
@@ -1316,6 +1320,26 @@ function handleRequest(req, res) {
     return send(res, 401, JSON.stringify({ ok: false, error: 'bad or missing token' }));
   }
 
+  if (pathname.indexOf('/api/calendar/') === 0 && calendarModule) {
+    function calendarReply(r) { send(res, r.ok === false ? 400 : 200, JSON.stringify(r)); }
+    if (req.method === 'GET' && pathname === '/api/calendar/status') return calendarReply(calendarModule.status());
+    if (req.method === 'GET' && pathname === '/api/calendar/agenda') return calendarModule.agenda(calendarReply);
+    if (req.method === 'GET' && pathname === '/api/calendar/tasks' && todoModule) return calendarReply(todoModule.list());
+    if (req.method !== 'POST') return send(res, 405, JSON.stringify({ ok: false, error: 'POST required' }));
+    if (!config.allowControl) return send(res, 403, JSON.stringify({ ok: false, error: 'Controls disabled in config' }));
+    return readJsonBody(req, res, function (body) {
+      if (pathname === '/api/calendar/connect') return calendarModule.begin(body, calendarReply);
+      if (pathname === '/api/calendar/disconnect') return calendarModule.disconnect(calendarReply);
+      if (pathname === '/api/calendar/refresh') {
+        calendarModule.refresh();
+        if (todoModule) todoModule.refresh();
+        return calendarReply({ ok: true });
+      }
+      if (pathname === '/api/calendar/tasks/complete' && todoModule) return todoModule.complete(body, calendarReply);
+      send(res, 404, JSON.stringify({ ok: false, error: 'Unknown calendar action' }));
+    });
+  }
+
   if (pathname === '/api/scheduled' && scheduledModule) {
     function scheduledReply() {
       var result = /** @type {any} */ (scheduledModule.status());
@@ -2137,6 +2161,8 @@ function init(opts) {
   if (opts.sshKeys) sshKeysModule = opts.sshKeys;
   if (opts.screentime) screentimeModule = opts.screentime;
   if (opts.scheduled) scheduledModule = opts.scheduled;
+  if (opts.calendar) calendarModule = opts.calendar;
+  if (opts.todo) todoModule = opts.todo;
   if (opts.backup) backupModule = opts.backup;
   if (opts.fromHomebrewChannel) fromHbcFn = opts.fromHomebrewChannel;
   if (opts.tileHidingOff) tileHidingOffMsg = opts.tileHidingOff;

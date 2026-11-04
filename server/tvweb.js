@@ -99,6 +99,8 @@ var history = require('./lib/history');
 var sshKeys = require('./lib/sshkeys');
 var screentime = require('./lib/screentime');
 var scheduled = require('./lib/scheduled');
+var calendar = require('./lib/calendar').create();
+var todo = require('./lib/todo').create({ graph: calendar.graph, status: calendar.status });
 var saverPowerOff = require('./lib/saverpoweroff');
 var remoteBattery = require('./lib/remotebattery');
 var backup = require('./lib/backup');
@@ -945,6 +947,8 @@ routes.init({
   sshKeys: sshKeys,
   screentime: screentime,
   scheduled: scheduled,
+  calendar: calendar,
+  todo: todo,
   backup: backup,
   configFile: CONFIG_FILE,
   controls: controls,

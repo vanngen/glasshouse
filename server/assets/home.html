@@ -76,6 +76,48 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 #rows{position:absolute;left:0;right:0;top:296px;bottom:40px;
   display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
 #rows:before,#rows:after{content:"";-webkit-flex:1 1 0;flex:1 1 0}
+#agenda{display:none;position:absolute;left:112px;right:112px;top:310px;pointer-events:none;overflow:hidden;text-shadow:0 1px 12px rgba(0,0,0,.55)}
+#agenda h2{font-size:21px;font-weight:400;color:#a39d93;margin-bottom:18px}
+#agenda-events{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+#agenda .appointment{width:50%;height:86px;padding-right:64px;min-width:0}
+#agenda .agenda-date{font-size:19px;color:#a39d93;margin-bottom:6px}
+#agenda .agenda-title{font-size:28px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#agenda-note{font-size:18px;color:#a39d93;margin-top:4px}
+#agenda.agenda-short h2{font-size:18px;margin-bottom:8px}
+#agenda.agenda-short .appointment{height:66px}
+#agenda.agenda-short .agenda-date{font-size:17px;margin-bottom:3px}
+#agenda.agenda-short .agenda-title{font-size:24px}
+#agenda.agenda-line h2{display:none}
+#agenda.agenda-line .appointment{width:100%;height:30px;display:-webkit-flex;display:flex;-webkit-align-items:baseline;align-items:baseline}
+#agenda.agenda-line .agenda-date{font-size:19px;margin:0 24px 0 0;white-space:nowrap}
+#agenda.agenda-line .agenda-title{font-size:22px}
+#agenda.agenda-line #agenda-note{display:none}
+#agenda.agenda-line #agenda-events:empty + #agenda-note{display:block;margin:0}
+.with-agenda #agenda{display:block}
+#agenda.has-todo{display:-webkit-flex;display:flex}
+#agenda.has-todo #agenda-calendar{width:50%;padding-right:72px;min-width:0}
+#agenda.has-todo .appointment{width:100%;padding-right:0}
+#todo{display:none;width:50%;min-width:0;pointer-events:auto}
+#agenda.has-todo #todo{display:block}
+#todo-list .todo-task{display:-webkit-flex;display:flex;-webkit-align-items:flex-start;align-items:flex-start;width:100%;height:76px;padding:8px 0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;border-radius:3px}
+#todo-list .todo-task.focus{outline:2px solid #e9ad55;outline-offset:5px}
+#todo-list .todo-check{display:block;-webkit-flex:0 0 auto;flex:0 0 auto;width:22px;height:22px;border:1px solid #a39d93;border-radius:50%;margin:4px 16px 0 0}
+#todo-list .todo-copy{min-width:0;overflow:hidden}
+#todo-list .todo-title{display:block;font-size:27px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#todo-list .todo-meta{display:block;font-size:19px;color:#a39d93;margin-top:5px}
+#todo-note{font-size:18px;color:#a39d93;margin-top:8px}
+#outlook-refresh{position:absolute;right:0;top:0;padding:2px 10px;border:0;border-radius:3px;background:transparent;color:#a39d93;font:inherit;font-size:19px;pointer-events:auto}
+#outlook-refresh.focus{outline:2px solid #e9ad55;outline-offset:4px;color:#ece7df}
+#outlook-refresh:disabled{opacity:.6}
+#agenda.agenda-line.has-todo #todo{padding-right:150px}
+#agenda.agenda-line:not(.has-todo) #agenda-calendar{padding-right:150px}
+#agenda.agenda-line .todo-task{height:30px;padding:0}
+#agenda.agenda-line .todo-title{font-size:22px}
+#agenda.agenda-line .todo-meta,#agenda.agenda-line #todo-note{display:none}
+#agenda.agenda-short .todo-task{height:64px;padding:3px 0}
+#agenda.agenda-short .todo-title{font-size:24px}
+#agenda.agenda-short .todo-meta{font-size:17px}
+.arranging #agenda,.recents #agenda,.finding #agenda,.folder #agenda{display:none}
 /* Along the bottom, as on LG's Home: no space below the rows. */
 .rows-bottom #rows:after{-webkit-flex:0 0 0;flex:0 0 0}
 
@@ -364,6 +406,19 @@ html.faded #stage{opacity:0}
   </section>
 
   <main id="rows"></main>
+  <section id="agenda" aria-label="Calendar" data-t-aria-label="home.calendar.label">
+    <button id="outlook-refresh" type="button">&mdash;</button>
+    <div id="agenda-calendar">
+    <h2 data-t="home.calendar.sevenDays">Next seven days</h2>
+    <div id="agenda-events"></div>
+    <div id="agenda-note"></div>
+    </div>
+    <section id="todo" aria-label="Microsoft To Do" data-t-aria-label="home.todo.label">
+      <h2 data-t="home.todo.title">To Do</h2>
+      <div id="todo-list"></div>
+      <div id="todo-note" aria-live="polite"></div>
+    </section>
+  </section>
   <div id="rail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><span class="word" data-t="home.search.rail">Search</span></div>
   <section id="finder">
     <div id="ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><input id="query" type="text" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Film or series" data-t-placeholder="home.search.placeholder"></div>
@@ -498,7 +553,7 @@ html.faded #stage{opacity:0}
     x.open(method, url, true);
     // Search waits ten seconds server-side; a series launch can need three
     // detail reads before opening the app.
-    x.timeout = url === '/api/home/search' ? 12000 : url === '/api/home/search/open' ? 20000 : 8000;
+    x.timeout = url === '/api/calendar/tasks/complete' ? 30000 : url === '/api/home/search' ? 12000 : url === '/api/home/search/open' ? 20000 : 8000;
     if (body !== null) x.setRequestHeader('Content-Type', 'application/json');
     x.onload = function () {
       var j = null;
@@ -520,6 +575,7 @@ html.faded #stage{opacity:0}
     stageScale = s;
     var x = (window.innerWidth - 1920 * s) / 2, y = (window.innerHeight - 1080 * s) / 2;
     st.style.webkitTransform = st.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+    renderAgenda();
   }
 
   // ---------------------------------------------------------------- items
@@ -700,6 +756,7 @@ html.faded #stage{opacity:0}
       if (active) scrollTrack(active, active.querySelector('.tile.focus'), !animating);
     }
     if (folder.open) renderFolder();
+    renderAgenda();
   }
   var renderedRows = '', barWidths = [];
 
@@ -772,7 +829,7 @@ html.faded #stage{opacity:0}
   function applyFocus(instant, noScroll) {
     var rows = document.querySelectorAll('.row');
     for (var ri = 0; ri < rows.length; ri++) {
-      var rowEl = rows[ri], kind = rowEl.getAttribute('data-key'), active = ri === state.row && state.bar < 0 && !state.rail;
+      var rowEl = rows[ri], kind = rowEl.getAttribute('data-key'), active = ri === state.row && state.bar < 0 && !state.rail && !(todoFocus >= 0) && !outlookRefreshFocus;
       rowEl.className = 'row' + (rowEl.getAttribute('data-empty') ? ' empty' : '') + (active ? ' active' : '') + (active && state.held ? ' held-row' : '');
       var tiles = rowEl.querySelectorAll('.tile'), c = colOf(kind);
       for (var ci = 0; ci < tiles.length; ci++) {
@@ -1278,6 +1335,10 @@ html.faded #stage{opacity:0}
   }
 
   function move(dr, dc) {
+    if (dr < 0 && !state.arranging && state.row === nextShown(0, 1) && $('agenda').offsetHeight) {
+      if (todoVisible.length && $('todo').offsetHeight) return focusTodo(0);
+      return focusOutlookRefresh();
+    }
     var onSort = colOf(rowKey()) === -1;
     // Left of any row's first tile is the search rail, outside arranging;
     // right goes back to the tile it came from.
@@ -1311,7 +1372,7 @@ html.faded #stage{opacity:0}
     $('stage').className = (state.arranging ? 'arranging' : '') + (recents.open ? ' recents' : '') +
       (finder.open ? ' finding' : '') + (finder.typing ? ' typing' : '') + (searchOn() ? '' : ' no-search') + (folder.open ? ' folder' : '') +
       (layout && layout.showClock === false ? ' no-clock' : '') + (layout && layout.rowsBottom === true ? ' rows-bottom' : '') +
-      (layout && layout.view === 'alternative' ? ' alternative' : '');
+      (layout && layout.view === 'alternative' ? ' alternative' : '') + (agendaData && agendaData.connected ? ' with-agenda' : '');
   }
 
   // ---------------------------------------------------------------- more apps
@@ -1882,6 +1943,8 @@ html.faded #stage{opacity:0}
 
   function setArranging(on) {
     if (layoutBusy) return;
+    todoFocus = -1;
+    outlookRefreshFocus = false; paintOutlookRefresh();
     layoutRevision++;
     // The focus stays on the same item as hidden tiles appear or go.
     var kind = rowKey(), cur = items(kind)[colOf(kind)];
@@ -2051,6 +2114,21 @@ html.faded #stage{opacity:0}
     }
     if (layoutBusy) { e.preventDefault(); return; }
     var k = e.keyCode;
+    if (outlookRefreshFocus && !recents.open && !folder.open && !state.arranging) {
+      e.preventDefault();
+      if (k === KEY.ok) outlookRefreshOk = true;
+      else if (k === KEY.down && todoVisible.length && $('todo').offsetHeight) focusTodo(0);
+      else if (k === KEY.back || k === KEY.left || k === KEY.down) leaveTodo();
+      return;
+    }
+    if (todoFocus >= 0 && !recents.open && !folder.open && !state.arranging) {
+      if (k === KEY.ok) { e.preventDefault(); todoOkDown = true; return; }
+      if (k === KEY.up && todoFocus === 0) { e.preventDefault(); return focusOutlookRefresh(); }
+      if (k === KEY.back || k === KEY.left || (k === KEY.down && todoFocus === todoVisible.length - 1)) { e.preventDefault(); return leaveTodo(); }
+      if (k === KEY.up || k === KEY.down) { e.preventDefault(); return focusTodo(todoFocus + (k === KEY.up ? -1 : 1)); }
+      if (k === KEY.right) { e.preventDefault(); todoPage++; todoFocus = 0; return renderAgenda(); }
+      return;
+    }
     if (k === KEY.ok) {
       // Acted on at release, unless held: a long press arranges.
       e.preventDefault();
@@ -2089,6 +2167,8 @@ html.faded #stage{opacity:0}
   }
 
   function onKeyUp(e) {
+    if (e.keyCode === KEY.ok && outlookRefreshOk) { e.preventDefault(); outlookRefreshOk = false; return refreshOutlook(); }
+    if (e.keyCode === KEY.ok && todoOkDown) { e.preventDefault(); todoOkDown = false; return completeTodo(todoVisible[todoFocus]); }
     if (e.keyCode === KEY.back) { backDown = false; return; }
     if (e.keyCode === KEY.ok) finder.okDown = false;
     if (e.keyCode !== KEY.ok || !okDownAt) return;
@@ -2122,6 +2202,10 @@ html.faded #stage{opacity:0}
   function hoverTile(target) {
     if (layoutBusy || !data || !layout) return;
     if (finder.open) return finderPointer(target);
+    if (within(target, 'outlook-refresh') && !state.arranging && !recents.open && !folder.open) return focusOutlookRefresh();
+    var taskButton = todoButton(target);
+    if (taskButton && !state.arranging && !recents.open && !folder.open) return focusTodo(+taskButton.getAttribute('data-task-index'));
+    if ((todoFocus >= 0 || outlookRefreshFocus) && tileAt(target)) { todoFocus = -1; outlookRefreshFocus = false; paintOutlookRefresh(); renderTodos(); applyFocus(false, true); }
     if (folder.open) {
       var inFolder = tileAt(target);
       if (inFolder && inFolder.hasAttribute('data-f') && +inFolder.getAttribute('data-f') !== folder.col) {
@@ -2154,6 +2238,9 @@ html.faded #stage{opacity:0}
   }
   function onClick(e) {
     if (!data || !layout || layoutBusy) return;
+    if (within(e.target, 'outlook-refresh') && !state.arranging && !finder.open && !folder.open && !recents.open) return refreshOutlook();
+    var taskButton = todoButton(e.target);
+    if (taskButton && !state.arranging && !finder.open && !folder.open && !recents.open) return completeTodo(todoVisible[+taskButton.getAttribute('data-task-index')]);
     if (folder.open) {
       var picked = tileAt(e.target);
       if (!picked || !picked.hasAttribute('data-f')) return closeFolder();
@@ -2394,6 +2481,8 @@ html.faded #stage{opacity:0}
   }
 
   function returned() {
+    todoFocus = -1; todoOkDown = false;
+    outlookRefreshFocus = false; outlookRefreshOk = false; paintOutlookRefresh();
     var dark = faded;
     if (!dark) fadeIn();
     initialEscape = false;
@@ -2453,6 +2542,152 @@ html.faded #stage{opacity:0}
   // Started dark where fading is chosen; in at the first catalogue, or before
   // long without one.
   if (fadeOn) { faded = true; paintFade(false); setTimeout(fadeIn, 1500); }
+  var agendaData = null, agendaPage = 0;
+  var todoData = null, todoPage = 0, todoSize = 3, todoVisible = [], todoFocus = -1, todoSaving = false, todoOkDown = false;
+  var outlookRefreshing = false, outlookRefreshFocus = false, outlookRefreshOk = false;
+  paintOutlookRefresh();
+  function renderAgenda() {
+    if (!agendaData || !agendaData.connected) return;
+    // Use only the wallpaper space between the header and the first visible
+    // launcher row. Dense layouts get one line; app tiles keep their full width.
+    var agenda = $('agenda'), stageTop = $('stage').getBoundingClientRect().top;
+    var firstRow = 1040, rows = $('rows').querySelectorAll('.row');
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].offsetHeight) firstRow = Math.min(firstRow, (rows[i].getBoundingClientRect().top - stageTop) / stageScale);
+    }
+    var headerBottom = $('now').offsetHeight, gap = firstRow - headerBottom - 32;
+    var size = gap >= 270 ? 4 : gap >= 150 ? 2 : 1;
+    var withTasks = !!(todoData && todoData.connected);
+    agenda.className = (size === 1 ? 'agenda-line' : gap < 180 ? 'agenda-short' : '') + (withTasks ? ' has-todo' : '');
+    agenda.style.top = (headerBottom + (size === 1 ? 4 : 28)) + 'px';
+    agenda.style.height = Math.max(30, firstRow - (headerBottom + (size === 1 ? 4 : 28)) - 20) + 'px';
+    todoSize = size === 1 ? 1 : Math.max(1, Math.min(3, Math.floor((parseFloat(agenda.style.height) - 65) / 76)));
+    if (withTasks) size = Math.min(size, gap >= 270 ? 2 : 1);
+    var events = (agendaData.events || []).filter(function (e) { return e.end > Date.now(); });
+    var pages = Math.max(1, Math.ceil(events.length / size));
+    agendaPage = agendaPage % pages;
+    var list = $('agenda-events');
+    while (list.firstChild) list.removeChild(list.firstChild);
+    events.slice(agendaPage * size, agendaPage * size + size).forEach(function (e) {
+      var item = document.createElement('div'); item.className = 'appointment';
+      var date = document.createElement('div'); date.className = 'agenda-date';
+      var start = new Date(e.start);
+      var lang = window.I18N && I18N.lang ? I18N.lang() : 'en';
+      date.textContent = start.toLocaleDateString(lang, { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' +
+        (e.allDay ? t('home.calendar.allDay', 'All day') : hm(start));
+      var title = document.createElement('div'); title.className = 'agenda-title';
+      title.textContent = e.title || t('home.calendar.untitled', 'Appointment');
+      item.appendChild(date); item.appendChild(title); list.appendChild(item);
+    });
+    $('agenda-note').textContent = agendaData.pending ? t('home.calendar.pending', 'Finish Microsoft sign-in in Home settings')
+      : agendaData.loading || (!agendaData.updated && !agendaData.stale) ? t('home.calendar.loading', 'Loading appointments…')
+      : agendaData.stale ? (agendaData.updated ? t('home.calendar.stale', 'Could not refresh · showing saved appointments')
+      : t('home.calendar.unavailable', 'Calendar unavailable · check Outlook connection')) : !events.length
+      ? t('home.calendar.empty', 'No upcoming appointments') : pages > 1
+        ? t('home.calendar.page', 'Page {page} of {pages}', { page: agendaPage + 1, pages: pages }) : '';
+    renderTodos();
+  }
+  function todoButton(target) {
+    while (target && target !== document.body) {
+      if (target.getAttribute && target.hasAttribute('data-task-index')) return target;
+      target = target.parentNode;
+    }
+    return null;
+  }
+  function renderTodos() {
+    if (!todoData) return;
+    var list = $('todo-list');
+    while (list.firstChild) list.removeChild(list.firstChild);
+    var tasks = todoData.tasks || [], pages = Math.max(1, Math.ceil(tasks.length / todoSize));
+    todoPage = todoPage % pages;
+    todoVisible = tasks.slice(todoPage * todoSize, (todoPage + 1) * todoSize);
+    if (todoFocus >= todoVisible.length) todoFocus = todoVisible.length - 1;
+    todoVisible.forEach(function (task, index) {
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'todo-task' + (todoFocus === index ? ' focus' : '');
+      button.setAttribute('data-task-index', index); button.disabled = todoSaving;
+      button.setAttribute('aria-label', t('home.todo.completeLabel', 'Complete {task}', { task: task.title }));
+      var check = document.createElement('span'); check.className = 'todo-check'; check.setAttribute('aria-hidden', 'true');
+      var copy = document.createElement('span'); copy.className = 'todo-copy';
+      var title = document.createElement('span'); title.className = 'todo-title'; title.textContent = task.title;
+      var meta = document.createElement('span'); meta.className = 'todo-meta';
+      var due = '', today = new Date(), day = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate());
+      if (task.due) {
+        var parts = task.due.split('-'), date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        var lang = window.I18N && I18N.lang ? I18N.lang() : 'en';
+        due = task.due === day ? t('home.todo.today', 'Today') : date.toLocaleDateString(lang, { weekday: 'short', day: 'numeric', month: 'short' });
+        if (task.due < day) due = t('home.todo.overdue', 'Overdue · {date}', { date: due });
+      }
+      meta.textContent = due ? t('home.todo.meta', '{due} · {list}', { due: due, list: task.list }) : task.list;
+      copy.appendChild(title); copy.appendChild(meta); button.appendChild(check); button.appendChild(copy); list.appendChild(button);
+    });
+    $('todo-note').textContent = !todoData.enabled ? t('home.todo.connect', 'Reconnect Outlook in Home settings to enable To Do')
+      : todoData.stale ? t('home.todo.stale', 'Tasks could not refresh') : todoData.loading ? t('home.todo.loading', 'Loading tasks…')
+      : !tasks.length ? t('home.todo.empty', 'All caught up') : t('home.todo.hint', 'Up from apps · OK to complete');
+  }
+  function focusTodo(index) {
+    outlookRefreshFocus = false; paintOutlookRefresh();
+    todoFocus = Math.max(0, Math.min(todoVisible.length - 1, index));
+    state.rail = false;
+    // Replacing a button under a stationary Magic Remote pointer triggers a
+    // second mousemove on some webOS browsers. Only repaint when it changes.
+    var buttons = $('todo-list').querySelectorAll('.todo-task');
+    for (var i = 0; i < buttons.length; i++) buttons[i].className = 'todo-task' + (i === todoFocus ? ' focus' : '');
+    applyFocus(false, true);
+  }
+  function leaveTodo() { todoFocus = -1; todoOkDown = false; outlookRefreshFocus = false; outlookRefreshOk = false; paintOutlookRefresh(); renderTodos(); applyFocus(); }
+  function paintOutlookRefresh() {
+    var button = $('outlook-refresh');
+    button.className = outlookRefreshFocus ? 'focus' : '';
+    button.disabled = !!outlookRefreshing;
+    button.textContent = outlookRefreshing ? t('home.outlook.refreshing', 'Refreshing…') : t('home.outlook.refresh', 'Refresh');
+  }
+  function focusOutlookRefresh() { todoFocus = -1; outlookRefreshFocus = true; renderTodos(); paintOutlookRefresh(); applyFocus(false, true); }
+  function refreshOutlook() {
+    if (outlookRefreshing || todoSaving) return;
+    outlookRefreshing = true; paintOutlookRefresh();
+    postJson('/api/calendar/refresh', {}, function (r) {
+      if (!r || !r.ok) {
+        outlookRefreshing = false; paintOutlookRefresh();
+        return toast(t('home.outlook.refreshFailed', 'Could not refresh Outlook'));
+      }
+      refreshTodos();
+      refreshAgenda(function () { outlookRefreshing = false; paintOutlookRefresh(); refreshTodos(); });
+    });
+  }
+  function completeTodo(task) {
+    if (!task || todoSaving) return;
+    todoSaving = true; renderTodos();
+    postJson('/api/calendar/tasks/complete', { id: task.id, listId: task.listId }, function (r, status, refused) {
+      todoSaving = false;
+      if (r && r.ok) {
+        todoData.tasks = (todoData.tasks || []).filter(function (item) { return item.id !== task.id || item.listId !== task.listId; });
+        toast(t('home.todo.completed', 'Task completed'), task.title);
+      } else toast(t('home.todo.failed', 'Could not complete task'), refused && refused.error);
+      renderAgenda(); applyFocus(false, true);
+    });
+  }
+  function refreshTodos() {
+    if (document.hidden || todoSaving) return;
+    getJson('/api/calendar/tasks', function (r) {
+      if (!r || !r.ok || todoSaving) return;
+      var changed = todoData && todoData.connectionRevision !== r.connectionRevision;
+      if (!r.connected || !r.enabled || changed) todoFocus = -1;
+      if (todoFocus < 0) { todoData = r; renderAgenda(); if (data && layout) applyFocus(false, true); }
+      if (r.loading) setTimeout(refreshTodos, 1000);
+    });
+  }
+  function refreshAgenda(done) {
+    if (document.hidden) { if (typeof done === 'function') done(); return; }
+    getJson('/api/calendar/agenda', function (r) {
+      if (r && r.ok) { agendaData = r; stageClass(); renderAgenda(); }
+      if (typeof done === 'function') done();
+    });
+  }
+  refreshAgenda();
+  refreshTodos();
+  setInterval(refreshTodos, 10000);
+  setInterval(refreshAgenda, 60000);
+  setInterval(function () { if (!document.hidden) { agendaPage++; if (todoFocus < 0 && !todoSaving) todoPage++; renderAgenda(); } }, 15000);
   fit();
   renderNow();
   updateWall();

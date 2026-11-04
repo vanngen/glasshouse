@@ -7,6 +7,45 @@
 
 ## What is on screen
 
+### Outlook calendar and To Do
+
+The Home tab's **Outlook calendar & To Do** section connects a personal Microsoft
+account using a device code. Register a Microsoft application for personal
+accounts, enable public client flows, enter its client ID, and press
+**Connect Outlook**. Open the Microsoft sign-in link, enter the code and
+approve `Calendars.Read`, `Tasks.ReadWrite` and `offline_access`. Existing
+calendar connections need one new approval to enable tasks. No client secret is needed.
+
+Glasshouse Home shows the default calendar's upcoming appointments over the
+next seven days, including recurring and all-day events. The agenda blends into
+the wallpaper above the launcher rows, without a panel or border. Apps keep
+their full width. The agenda fits one to four appointments into the available
+space and rotates longer lists every fifteen seconds. It refreshes every five
+minutes. Times follow the TV browser's local timezone. Appointment titles are
+shown even when an event is marked private in Outlook. A failed refresh labels the cached agenda as stale.
+Pending Microsoft approval and initial loading have separate status messages;
+an empty agenda is shown only after a successful calendar read.
+**Disconnect Outlook** cancels sign-in, removes the stored tokens and clears
+the agenda. Microsoft access can also be revoked in the account's app permissions.
+
+The TV needs curl with working Microsoft HTTPS access. Calendar sign-in is
+configured from the web dashboard; the TV dashboard has no connection controls.
+
+To Do appears to the right of the calendar, showing incomplete tasks from all
+lists. Due dates and overdue items are shown with each list's name. Tasks with
+due dates appear first, then undated tasks. Longer lists rotate while the list
+is unfocused. From the top app row, press Up to focus tasks, Up/Down to move,
+Right for the next page, OK to complete, and Back or Left to return to the apps.
+The Magic Remote pointer can select and complete tasks too. A task disappears
+only after Microsoft confirms completion. No task title, deadline or other
+property is changed. Tasks refresh at most every five minutes and are cached
+only in memory, alongside the calendar's protected Microsoft connection.
+
+**Refresh**, at the right of the calendar and To Do headings, reloads both
+immediately. With the remote, press Up from the first task to reach it, then
+OK. With no tasks, Up from the top app row goes straight to Refresh. Back or
+Left returns to the apps. The button also works with the Magic Remote pointer.
+
 Glasshouse Home displays a clock and date (following the TV's 12-hour or 24-hour time setting), the last active source or app, and up to four rows (any row with no visible items is automatically hidden):
 
 <div class="grid cards" markdown>

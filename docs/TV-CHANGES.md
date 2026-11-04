@@ -199,3 +199,19 @@ It stores a private run journal at `/var/lib/tvweb/scheduled-apps-state.json`
 to prevent duplicate launches. The Scheduled tab can edit LG's existing
 power-on timer using the same control as the System tab. No extra process,
 listener, PC service or boot hook is installed. App schedules default to off.
+
+## Outlook calendar on Glasshouse Home
+
+Opting in stores Microsoft OAuth tokens in `/var/lib/tvweb/outlook-calendar.json`
+with mode 0600, separate from exported settings. Tokens are sent only to
+Microsoft's fixed HTTPS endpoints, through curl's standard input. The home
+screen receives event titles and times, never tokens. Appointments are cached
+in memory. Disconnecting replaces the stored credentials with an empty object.
+Deployment retains this file; removing Glasshouse manually should also remove
+it, and Microsoft account permissions can be revoked independently.
+
+To Do uses the same protected connection, with explicit `Tasks.ReadWrite`
+consent. Its task cache stays in memory. Selecting a known incomplete task
+on Home sends only `{ "status": "completed" }` to that task's Microsoft Graph
+endpoint. Calendar access remains read-only. Task completion uses the existing
+dashboard authentication, control permission and same-origin JSON guards.
