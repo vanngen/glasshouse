@@ -230,12 +230,73 @@ Use `NO_MKDOCS_2_WARNING=1 mkdocs serve` to preview the site locally at `http://
 
 `scripts/emulate-tv.js` runs the server inside a simulated TV environment with procfs, sysfs, Luna calls, installed apps, remote key filters, and recent apps mocked. It serves the web dashboard, the TV app dashboard, and Glasshouse Home locally for development and visual testing without physical TV hardware:
 
+Run the following commands inside a dedicated container or VM, as described
+below. The mock environment does not contain host commands.
+
 ```bash
 npm run emulate
 node scripts/emulate-tv.js [--port 8080] [--model c2|b8|c3|cx|c1] [--webos 6.5.3] [--home on|off] [--open]
 ```
 
 The models are a C2 (webOS 9.2), a B8 (webOS 4.4), a C3 (webOS 10.3), a CX (webOS 5.6) and a C1 (webOS 6.5). `--webos` reports another version on the chosen model, for a version no profile covers. Glasshouse Home starts switched on from webOS 7, where main supports it; `--home on` starts it switched on elsewhere, for a branch that adds a version. Switching it in the emulator changes nothing, since nothing is mounted. The pages run in the computer's browser, not the TV's, so the emulator does not show what an older TV's browser gets wrong.
+
+### Parallel emulator instances
+
+Run one instance per worktree in its own container or VM with a distinct port, for example
+`node scripts/emulate-tv.js --port 18081 --model c2` and
+`node scripts/emulate-tv.js --port 18082 --model b8`. Each invocation starts
+that worktree's server with a fresh temporary fixture filesystem and configuration.
+The filesystem wrappers redirect selected Node filesystem calls, omit `/tmp`,
+and do not intercept subprocesses. For example, the reboot control executes
+`/bin/sh -c 'sync; /sbin/reboot'`. Running directly on a development host can
+affect that host, and multiple instances can share fixed `/tmp` paths.
+Use a separate container or VM for each instance, including on Windows;
+WSL by itself does not separate agents sharing the same distribution.
+The executable `test/mocks/fake-luna-send.js` must have LF line endings even
+on a Windows checkout; `.gitattributes` pins this so its Linux shebang works
+inside the container.
+
+The [contributor setup](../CONTRIBUTING.md#multiple-agents-and-worktrees)
+provides Docker commands. They mount only the agent's worktree, read-only,
+give each container its own `/tmp` and process namespace, drop Linux
+capabilities and publish only the emulator port on host loopback. Do not add
+privileged mode, host PID/network namespaces, host devices, the Docker socket,
+or host system-directory mounts. The read-only source mount also prevents
+emulator controls from modifying the checkout. Features that need to write
+source assets may fail in this preview environment.
+
+State is disposable between runs. Stop each instance with Ctrl+C when done;
+`--rm` removes the container's writable filesystem after exit.
+If the requested port is occupied, the script chooses another; use the URLs
+it prints. With Docker, the printed port must match the published container
+port; if it differs, stop and restart with matching ports. The TV app
+dashboard is at `/assets/dashboard.html` and Glasshouse
+Home at `/assets/home.html` on that same port.
+
+Use separate browser profiles or contexts for agents: different ports do not
+isolate every kind of browser state, including cookies. The emulator listens
+on all interfaces with controls enabled and no token, so run it on a trusted
+development machine without exposing its port to untrusted networks. Keep
+outbound requests and integration credentials limited to test services; the
+filesystem mocks do not intercept networking.
+
+The mocks exercise application logic, not LG's actual services or hardware.
+They cannot qualify Home replacement and mounts, boot and standby recovery,
+remote input devices, panel care, HDMI/eARC or native helpers. A model profile
+or `--webos` override changes fixture data, not the runtime's Node version or
+browser engine. Keep the supported-Node and ES5 checks as well as real-TV
+testing for those boundaries.
+
+LG's [Simulator](https://webostv.developer.lge.com/develop/tools/simulator-introduction)
+can supplement web-app rendering and remote-navigation checks, but supports
+only a subset of Luna APIs and no native apps; audio/video behavior also
+differs from hardware. The older
+[Emulator](https://webostv.developer.lge.com/develop/tools/emulator-introduction)
+is deprecated and covers only webOS 6.x and earlier. Neither establishes
+that Glasshouse's privileged changes work on a retail TV.
+
+For worktree setup and exclusive physical-TV access, follow
+[Multiple agents and worktrees](../CONTRIBUTING.md#multiple-agents-and-worktrees).
 
 
 Home recovery checks cover a switch-off cut short, failed layout restoration and its retry, failed migration without losing the snapshot or removing the old app, closing the old app when it is left running in the background, and a missing first heartbeat when Home already has the foreground id. A refused device tile is followed by a remote input switch to check that Last opened still records the whole input. Remote-key checks cover clearing the startup notice on escape and retrying a configd write after the local map was saved. Browser checks cover pending/failed layout edits, each row's Order on the view, the Home tab and the TV app, edits attempted during an Order save and refresh, keeping unsaved moves when Order changes, clicking Order while a tile is held, first-catalogue failure, delayed readiness, the Home tab left out where Glasshouse Home is not offered, and the Apps tab's notes while it is on.
